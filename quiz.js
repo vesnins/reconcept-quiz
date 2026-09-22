@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.2.2 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.3.1 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
@@ -108,11 +108,6 @@
   };
 
   Q.q_scale_d = Q.q_scale_a;
-  var COMPANY_T = {}, TASK_T = {
-    a: 'заявки на услуги', b: 'продажа товаров',
-    c: 'представление компании', d: 'трафик из поиска'
-  };
-  Q.q_company.o.forEach(function (x) { COMPANY_T[x[0]] = x[1]; });
 
   /* ---------- СОСТОЯНИЕ ---------- */
   var KEY = 'rq_state_v2';
@@ -293,15 +288,6 @@
 
   function money(n) { return n.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ₽'; }
 
-  function diagnosis() {
-    var p = [TASK_T[S.a.q_task] || 'сайт'];
-    if (S.a.q_company) p.push((COMPANY_T[S.a.q_company] || '').toLowerCase());
-    var src = { ads: 'трафик из рекламы', seo: 'трафик из поиска', social: 'трафик из соцсетей', offline: 'офлайн-аудитория' }[S.a.q_source];
-    if (src && S.a.q_task === 'a') p.push(src);
-    p[0] = p[0].charAt(0).toUpperCase() + p[0].slice(1);
-    return p.join(' · ');
-  }
-
   /* ---------- РЕНДЕР ---------- */
   var root;
 
@@ -419,14 +405,11 @@
     var c = free ? null : calc();
     var wrap = el('div', 'rq-result');
 
-    wrap.appendChild(el('div', 'rq-count', 'Готово'));
-
     if (free) {
       wrap.appendChild(el('h3', 'rq-q', 'Задача нетиповая — посчитаем лично'));
       wrap.appendChild(el('p', 'rq-lead', 'Шаблонный расчёт тут ничего не даст. Напишите, в двух словах, что нужно — разберём задачу и назовём цифру.'));
       ym('quiz_result', { task: 'other' });
     } else {
-      wrap.appendChild(el('p', 'rq-diag', esc(diagnosis())));
       wrap.appendChild(el('h3', 'rq-q', esc(FORMAT_T[c.scope.kind] + ' ' + PLATFORM_T[c.platform])));
 
       var ul = el('ul', 'rq-why');
@@ -440,8 +423,7 @@
 
       var cols = el('div', 'rq-cols');
       var w = el('div', 'rq-works');
-      w.appendChild(el('h4', '', 'Что входит'));
-      var wl = el('ul', '');
+      var wl = el('ol', '');
       works(c).forEach(function (t) { wl.appendChild(el('li', '', esc(t))); });
       w.appendChild(wl);
       cols.appendChild(w);
@@ -450,8 +432,8 @@
         S.a.q_company !== 'ip' && S.a.q_company !== 'u20' && c.altHi > c.hi;
       if (showAlt) {
         var alt = el('div', 'rq-alt');
-        alt.appendChild(el('h4', '', 'Альтернатива: на своём коде'));
-        alt.appendChild(el('div', 'rq-num rq-num--sm', money(c.altLo) + ' – ' + money(c.altHi)));
+        alt.appendChild(el('h3', 'rq-q', 'Альтернатива: на своём коде'));
+        alt.appendChild(el('div', 'rq-num', money(c.altLo) + ' – ' + money(c.altHi)));
         alt.appendChild(el('div', 'rq-term', 'Срок: от ' + c.altWeeks + ' недель'));
         alt.appendChild(el('p', '', 'Дороже и дольше, зато максимальная скорость загрузки, потолок по SEO выше, код и сервер ваши, любой функционал возможен.'));
         cols.appendChild(alt);
@@ -467,20 +449,19 @@
     }
 
     var bonus = el('div', 'rq-bonus');
-    bonus.appendChild(el('h4', '', 'Бесплатная консультация 30 минут'));
+    bonus.appendChild(el('p', '', 'Бесплатная консультация 30 минут'));
     bonus.appendChild(el('p', '', 'Разберём задачу и отдадим структуру будущего сайта — даже если работать будете не с нами.'));
-    wrap.appendChild(bonus);
-
     var btns = el('div', 'rq-btns');
-    [['tg', 'Написать в Telegram', 'quiz_tg'], ['max', 'Написать в MAX', 'quiz_max']].forEach(function (b, i) {
-      var a = el('a', 'rq-btn' + (i === 0 ? ' rq-btn--main' : ''), esc(b[1]));
+    [['tg', 'написать в Telegram', 'quiz_tg'], ['max', 'написать в MAX', 'quiz_max']].forEach(function (b) {
+      var a = el('a', 'rq-btn', esc(b[1]));
       a.href = CFG.LINKS[b[0]];
       a.target = '_blank';
       a.rel = 'noopener';
       a.addEventListener('click', function () { ym(b[2], { contact: b[0] }); });
       btns.appendChild(a);
     });
-    wrap.appendChild(btns);
+    bonus.appendChild(btns);
+    wrap.appendChild(bonus);
 
     var again = el('button', 'rq-again', 'Пройти заново');
     again.type = 'button';
