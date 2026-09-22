@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.2.0 */
+/* Reconcept Quiz v1.2.2 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -43,7 +43,7 @@
   text-align: left;
   cursor: pointer; transition: border-color .12s ease, background-color .12s ease;
 }
-.rq-opt.is-on { border-color: var(--rq-dark); background: var(--rq-accent); }
+.rq-opt.is-on { border-color: #c8c8fc; background: #c8c8fc; }
 .rq-opt:focus-visible { outline: 2px solid var(--rq-dark); outline-offset: 2px; }
 
 /* поле ввода */
@@ -62,10 +62,7 @@
   background: none; border: none; padding: 12px 0;
   cursor: pointer;
 }
-.rq-next {
-  padding: 18px 40px; background: var(--rq-dark); border: none;
-  color: #fff; font-size: 17px; font-weight: 600; cursor: pointer;
-}
+.rq-next { background: none; border: none; padding: 12px 0; cursor: pointer; }
 .rq-back:focus-visible, .rq-next:focus-visible { outline: 2px solid var(--rq-dark); outline-offset: 2px; }
 
 /* результат */

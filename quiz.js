@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.2.0 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.2.2 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
@@ -318,7 +318,7 @@
     if (S.done) return renderResult();
     var q = queue(), id = q[Math.min(S.idx, q.length - 1)];
     if (S.idx >= q.length) { finish(); return; }
-    renderQuestion(id, q.length);
+    renderQuestion(id, q.length > 1 ? q.length : 6);
   }
 
   function renderQuestion(id, total) {
@@ -326,7 +326,6 @@
     var wrap = el('div', 'rq-step');
 
     var head = el('div', 'rq-head');
-    head.appendChild(el('div', 'rq-count', 'Вопрос ' + (S.idx + 1) + ' из ' + total));
     var bar = el('div', 'rq-bar');
     bar.appendChild(el('i', '', ''));
     bar.firstChild.style.width = Math.round((S.idx / total) * 100) + '%';
