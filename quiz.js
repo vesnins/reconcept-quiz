@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.4.0 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.5.0 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
@@ -41,7 +41,8 @@
   /* ---------- ВОПРОСЫ ---------- */
   var Q = {
     q_task: {
-      t: 'Что должен делать сайт?',
+      t: 'Что должен делать сайт?', multi: true,
+      hint: 'Можно выбрать несколько',
       o: [
         ['a', 'Продавать услуги, приносить заявки'],
         ['b', 'Продавать товары'],
@@ -50,32 +51,20 @@
         ['f', 'Другое']
       ]
     },
-    q_scale_a: {
-      t: 'Сколько разных услуг или категорий продукции нужно разместить на сайте?',
-      hint: 'Например, у завода металлоконструкций: ангары, навесы, фермы, лестницы — это 4',
-      o: [['s1', '1–2'], ['s2', '3–7'], ['s3', '8–15'], ['s4', 'Больше 15'], ['unknown', 'Пока не знаю']]
-    },
-    q_scale_b: {
-      t: 'Сколько товаров в каталоге?',
-      o: [['s1', 'До 50'], ['s2', '50–500'], ['s3', '500–5 000'], ['s4', 'Больше 5 000'], ['unknown', 'Пока не знаю']]
-    },
-    q_scale_c: {
-      t: 'Что нужно показать на сайте?', multi: true,
-      hint: 'Можно выбрать несколько',
-      o: [
-        ['about', 'О компании'], ['team', 'Команда'], ['cases', 'Проекты и кейсы'],
-        ['services', 'Услуги или продукция'], ['prod', 'Производство'],
-        ['docs', 'Сертификаты и документы'], ['jobs', 'Вакансии'],
-        ['news', 'Новости'], ['contacts', 'Контакты']
-      ]
-    },
-    q_scale_d: null,
-    q_source: {
-      t: 'Откуда придут люди?',
-      o: [
-        ['ads', 'Реклама в Яндексе'], ['seo', 'Поиск, органика'],
-        ['social', 'Соцсети и Telegram'], ['offline', 'Офлайн, визитка, тендеры'],
-        ['unknown', 'Пока не знаю']
+    q_scale: {
+      group: [
+        {
+          id: 'q_sections',
+          t: 'Сколько разделов на сайте?',
+          hint: 'Раздел — отдельная страница: услуга, каталог, о компании, кейсы, блог, контакты',
+          o: [['r1', '1–2'], ['r2', '3–5'], ['r3', '6–10'], ['r4', '11–20'], ['r5', 'Больше 20'], ['unknown', 'Пока не знаю']]
+        },
+        {
+          id: 'q_catalog',
+          t: 'Сколько товаров в каталоге?',
+          when: function () { return has('b'); },
+          o: [['c1', 'До 50'], ['c2', '50–500'], ['c3', '500–5 000'], ['c4', 'Больше 5 000'], ['unknown', 'Пока не знаю']]
+        }
       ]
     },
     q_features: {
@@ -89,7 +78,7 @@
       ]
     },
     q_rhythm: {
-      t: 'Кто будет вести контент?',
+      t: 'Кто будет менять контент на сайте?',
       o: [
         ['often', 'Хотим часто менять и тестировать, нашими руками'],
         ['rare', 'Правки редкие, можем просить вас'],
@@ -107,10 +96,10 @@
     }
   };
 
-  Q.q_scale_d = Q.q_scale_a;
+  function has(k) { return (S.a.q_task || []).indexOf(k) > -1; }
 
   /* ---------- СОСТОЯНИЕ ---------- */
-  var KEY = 'rq_state_v2';
+  var KEY = 'rq_state_v3';
   var S = { a: {}, idx: 0, sid: '', started: false, done: false, max: 0 };
 
   function load() {
@@ -135,49 +124,35 @@
 
   /* ---------- ОЧЕРЕДЬ ВОПРОСОВ ---------- */
   function queue() {
-    var t = S.a.q_task;
-    if (!t || t === 'f') return ['q_task'];
-    var q = ['q_task', 'q_scale_' + t], sc = S.a.q_scale_a;
-    if (t === 'a' && (!sc || sc === 's1')) q.push('q_source');
-    q.push('q_features', 'q_rhythm', 'q_company');
-    return q;
+    var t = S.a.q_task || [];
+    if (!t.length || has('f')) return ['q_task'];
+    return ['q_task', 'q_scale', 'q_features', 'q_rhythm', 'q_company'];
+  }
+
+  function subsOf(cfg, id) {
+    if (!cfg.group) return [{ id: id, t: cfg.t, hint: cfg.hint, o: cfg.o, multi: cfg.multi }];
+    return cfg.group.filter(function (s) { return !s.when || s.when(); });
   }
 
   /* ---------- РАСЧЁТ ---------- */
   function rate() { return RATE_COMPANY[S.a.q_company] || 5000; }
 
+  var SEC = { r1: [1, 2], r2: [3, 5], r3: [6, 10], r4: [11, 20], r5: [21, 30], unknown: [5, 15] };
+  var CAT = { c1: [2, 2], c2: [3, 5], c3: [6, 10], c4: [10, 16], unknown: [3, 10] };
+
   function scope() {
-    var eff = S.a.q_task, sc = S.a['q_scale_' + eff], src = S.a.q_source;
-    if (eff === 'a') {
-      if (sc === 's1' && (src === 'ads' || src === 'social')) return { kind: 'landing', n: [6, 8] };
-      if (sc === 's2') return { kind: 'multi', n: [7, 12] };
-      if (sc === 's1' || !sc || sc === 'unknown') return { kind: 'multi', n: [5, 7] };
-      if (sc === 's3') return { kind: 'multi', n: [10, 18] };
-      return { kind: 'multi', n: [20, 35] };
-    }
-    if (eff === 'b') {
-      if (sc === 's1') return { kind: 'shop', n: [5, 7] };
-      if (sc === 's2') return { kind: 'shop', n: [6, 9] };
-      if (sc === 's3') return { kind: 'shop', n: [8, 12] };
-      if (sc === 's4') return { kind: 'shop', n: [10, 15] };
-      return { kind: 'shop', n: [6, 9] };
-    }
-    if (eff === 'c') {
-      var sel = S.a.q_scale_c || [];
-      var n = sel.length + (sel.indexOf('cases') > -1 ? 2 : 0) + (sel.indexOf('news') > -1 ? 2 : 0);
-      n = Math.max(5, n);
-      return { kind: 'multi', n: [n, n + 2] };
-    }
-    // D: как A + раздел материалов (+2)
-    if (sc === 's2') return { kind: 'multi', n: [9, 14] };
-    if (sc === 's3') return { kind: 'multi', n: [12, 20] };
-    if (sc === 's4') return { kind: 'multi', n: [22, 37] };
-    return { kind: 'multi', n: [7, 9] };
+    var s = S.a.q_sections, sec = SEC[s] || SEC.unknown, shop = has('b');
+    var lo = sec[0], hi = sec[1];
+    if (shop) { var c = CAT[S.a.q_catalog] || CAT.unknown; lo += c[0]; hi += c[1]; }
+    var kind = shop ? 'shop' : (s === 'r1' ? 'landing' : 'multi');
+    if (kind === 'landing') { lo = 6; hi = 8; }
+    var unsure = !s || s === 'unknown' || (shop && (!S.a.q_catalog || S.a.q_catalog === 'unknown'));
+    return { kind: kind, n: [lo, hi], unsure: unsure };
   }
 
   function feats() {
     var sel = (S.a.q_features || []).filter(function (k) { return k !== 'none' && FEATURES[k]; });
-    if (S.a.q_task === 'b' && sel.indexOf('catalog') < 0) sel.unshift('catalog');
+    if (has('b') && sel.indexOf('catalog') < 0) sel.unshift('catalog');
     var hard = false, h0 = 0, h1 = 0, nonNative0 = 0, nonNative1 = 0;
     sel.forEach(function (k) {
       var f = FEATURES[k];
@@ -189,7 +164,7 @@
   }
 
   function platform(f) {
-    if (f.hard || S.a.q_company === 'holding' || S.a.q_scale_b === 's4') return 'astro';
+    if (f.hard || S.a.q_company === 'holding' || S.a.q_catalog === 'c4') return 'astro';
     if (S.a.q_rhythm === 'often') return f.soft[1] > 0 ? 'module' : 'tilda';
     if (f.soft[1] > CFG.SOFT_LIMIT) return 'astro';
     if (f.soft[1] > 0) return 'module';
@@ -222,6 +197,8 @@
       altLo = (Math.max(baseTilda(sp, r, sp.n[0]) * CFG.ASTRO_K, CFG.ASTRO_MIN) + f.h[0] * CFG.HOUR);
       altHi = (Math.max(baseTilda(sp, r, sp.n[1]) * CFG.ASTRO_K, CFG.ASTRO_MIN) + f.h[1] * CFG.HOUR);
     }
+
+    if (sp.unsure) { lo *= 0.95; hi *= 1.15; altLo *= 0.95; altHi *= 1.15; }
 
     return {
       scope: sp, rate: r, f: f, platform: p,
@@ -265,7 +242,7 @@
     } else {
       var hardNames = f.sel.filter(function (k) { return FEATURES[k].hard; }).map(function (k) { return FEATURES[k].t.toLowerCase(); });
       if (S.a.q_company === 'holding') hardNames.push('требования к своему серверу и коду');
-      if (S.a.q_scale_b === 's4') hardNames.push('каталог больше 5 000 позиций');
+      if (S.a.q_catalog === 'c4') hardNames.push('каталог больше 5 000 позиций');
       if (hardNames.length) r.push(hardNames[0].charAt(0).toUpperCase() + hardNames[0].slice(1) + ' — на конструкторе не делается.');
       r.push('Максимум из технического SEO и скорости загрузки.');
       r.push('Код и сервер ваши, платформа вас ничем не ограничивает.');
@@ -308,7 +285,7 @@
   }
 
   function renderQuestion(id, total) {
-    var cfg = Q[id];
+    var cfg = Q[id], subs = subsOf(cfg, id);
     var wrap = el('div', 'rq-step');
 
     var head = el('div', 'rq-head');
@@ -318,24 +295,24 @@
     head.appendChild(bar);
     wrap.appendChild(head);
 
-    wrap.appendChild(el('h3', 'rq-q', esc(cfg.t)));
-    if (cfg.hint) wrap.appendChild(el('p', 'rq-hint', esc(cfg.hint)));
-
-    var list = el('div', 'rq-opts');
-    var picked = S.a[id];
-    (cfg.o || []).forEach(function (o, i) {
-      var b = el('button', 'rq-opt');
-      b.type = 'button';
-      b.setAttribute('data-v', o[0]);
-      var on = cfg.multi ? (picked || []).indexOf(o[0]) > -1 : picked === o[0];
-      if (on) b.className += ' is-on';
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.innerHTML = '<span>' + esc(o[1]) + '</span>';
-      b.addEventListener('click', function () { pick(id, o[0], cfg); });
-      list.appendChild(b);
+    subs.forEach(function (s, si) {
+      wrap.appendChild(el('h3', 'rq-q' + (si ? ' rq-q--next' : ''), esc(s.t)));
+      if (s.hint) wrap.appendChild(el('p', 'rq-hint', esc(s.hint)));
+      var list = el('div', 'rq-opts');
+      var picked = S.a[s.id];
+      (s.o || []).forEach(function (o) {
+        var b = el('button', 'rq-opt');
+        b.type = 'button';
+        b.setAttribute('data-v', o[0]);
+        var on = s.multi ? (picked || []).indexOf(o[0]) > -1 : picked === o[0];
+        if (on) b.className += ' is-on';
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        b.innerHTML = '<span>' + esc(o[1]) + '</span>';
+        b.addEventListener('click', function () { pick(s, o[0], id, subs); });
+        list.appendChild(b);
+      });
+      wrap.appendChild(list);
     });
-    wrap.appendChild(list);
-
 
     var nav = el('div', 'rq-nav');
     if (S.idx > 0) {
@@ -354,31 +331,39 @@
     root.appendChild(wrap);
   }
 
-  function pick(id, val, cfg) {
+  function ready(subs) {
+    return subs.every(function (s) {
+      var v = S.a[s.id];
+      return v != null && (!Array.isArray(v) || v.length > 0);
+    });
+  }
+
+  function pick(sub, val, stepId, subs) {
     if (!S.started) { S.started = true; ym('quiz_start'); }
-    if (cfg.multi) {
+    var id = sub.id;
+    if (sub.multi) {
       var arr = S.a[id] ? S.a[id].slice() : [];
-      if (val === 'none' || val === 'dunno') arr = arr.indexOf(val) > -1 ? [] : [val];
+      var solo = val === 'none' || val === 'f';
+      if (solo) arr = arr.indexOf(val) > -1 ? [] : [val];
       else {
-        arr = arr.filter(function (x) { return x !== 'none' && x !== 'dunno'; });
+        arr = arr.filter(function (x) { return x !== 'none' && x !== 'f'; });
         var i = arr.indexOf(val);
         if (i > -1) arr.splice(i, 1); else arr.push(val);
       }
-      S.a[id] = arr; save(); render();
-    } else {
-      if (S.a[id] !== val) {
-        S.a[id] = val;
-        if (id === 'q_task' || id === 'q_scale_a') {
-          (id === 'q_task' ? ['q_scale_a', 'q_scale_b', 'q_scale_c', 'q_scale_d', 'q_source'] : ['q_source']).forEach(function (k) { delete S.a[k]; });
-        }
-      }
-      save();
-      setTimeout(function () { step(id); }, 180);
+      S.a[id] = arr;
+      if (id === 'q_task') { delete S.a.q_sections; delete S.a.q_catalog; }
+      save(); render();
+      return;
     }
+    S.a[id] = val;
+    save();
+    if (ready(subs)) setTimeout(function () { step(stepId); }, 180);
+    else render();
   }
 
   var t0 = Date.now();
   function step(id) {
+    if (!ready(subsOf(Q[id], id))) return;
     var n = S.idx + 1, sec = Math.round((Date.now() - t0) / 1000);
     if (n > S.max) S.max = n;
     ym('quiz_step_' + n, { max_step: S.max, last_q: id, ['t_' + id]: sec });
@@ -400,7 +385,7 @@
 
   /* ---------- РЕЗУЛЬТАТ ---------- */
   function renderResult() {
-    var free = S.a.q_task === 'f';
+    var free = has('f');
     var c = free ? null : calc();
     var wrap = el('div', 'rq-result');
 
@@ -442,7 +427,7 @@
       wrap.appendChild(el('p', 'rq-disc', 'Это ориентир по похожим проектам. Точная смета — после обсуждения задачи и технического задания. Цена может измениться в обе стороны.'));
 
       ym('quiz_result', {
-        task: S.a.q_task, company: S.a.q_company,
+        task: (S.a.q_task || []).join('+'), company: S.a.q_company,
         format: c.scope.kind, platform: c.platform, min: c.lo, max: c.hi
       });
     }
@@ -475,11 +460,11 @@
     if (S.done || !dlg || !dlg.open) return;
     var q = queue(), id = q[Math.min(S.idx, q.length - 1)], cfg = Q[id];
     if (!cfg) return;
-    if (e.key === 'Enter' && cfg.multi && document.activeElement.tagName !== 'BUTTON') { step(id); return; }
+    var subs = subsOf(cfg, id);
+    var sub = subs.filter(function (s) { return S.a[s.id] == null; })[0] || subs[subs.length - 1];
+    if (e.key === 'Enter') { step(id); return; }
     var n = parseInt(e.key, 10);
-    if (n >= 1 && n <= 9 && cfg.o && cfg.o[n - 1]) {
-      pick(id, cfg.o[n - 1][0], cfg);
-    }
+    if (n >= 1 && n <= 9 && sub.o && sub.o[n - 1]) pick(sub, sub.o[n - 1][0], id, subs);
   }
 
   /* ---------- СТАРТ ---------- */
@@ -488,6 +473,7 @@
     if (!root) return;
     root.className = 'rq';
     dlg = el('dialog', 'rq-dlg');
+    dlg.tabIndex = -1;
     dlg.setAttribute('aria-label', 'Расчёт стоимости сайта');
     var x = el('button', 'rq-x', '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" fill="none"/></svg>');
     x.type = 'button';
@@ -516,6 +502,7 @@
   function open() {
     reset(); render();
     dlg.showModal();
+    dlg.focus();
     body.scrollTop = 0;
     t0 = Date.now();
     ym('quiz_view');

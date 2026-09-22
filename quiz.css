@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.4.0 */
+/* Reconcept Quiz v1.5.0 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -28,16 +28,18 @@
 }
 .rq-hint { margin: 0 0 24px; }
 .rq-q + .rq-opts { margin-top: 24px; }
+.rq-q--next { margin-top: 40px; }
 
 /* варианты */
 .rq-opts { display: grid; grid-template-columns: 1fr; gap: 12px; }
 .rq-opt {
   display: flex; align-items: center; gap: 14px;
   width: 100%; min-height: 60px; padding: 16px 20px;
-  background: #fff; border: 1px solid var(--rq-line);
+  background: #fff; border: 1px solid transparent;
   text-align: left;
-  cursor: pointer; transition: border-color .12s ease, background-color .12s ease;
+  cursor: pointer; transition: background-color .2s ease, border-color .2s ease;
 }
+@media (hover: hover) { .rq-opt:hover { border-color: #c8c8fc; background: #c8c8fc; } }
 .rq-opt.is-on { border-color: #c8c8fc; background: #c8c8fc; }
 .rq-opt:focus-visible { outline: 2px solid var(--rq-dark); outline-offset: 2px; }
 
@@ -107,14 +109,15 @@ html:has(.rq-dlg[open]) { overflow: hidden; scrollbar-gutter: stable; }
   transition: opacity .2s ease, transform .2s ease, overlay .2s allow-discrete, display .2s allow-discrete;
 }
 .rq-dlg[open] { opacity: 1; transform: none; }
+.rq-dlg:focus { outline: none; }
 @starting-style { .rq-dlg[open] { opacity: 0; transform: translateY(16px); } }
 
 .rq-dlg::backdrop {
-  background: rgb(0 0 0 / 0);
-  transition: background-color .2s ease, overlay .2s allow-discrete, display .2s allow-discrete;
+  background: rgb(0 0 0 / 0); backdrop-filter: blur(0px);
+  transition: background-color .2s ease, backdrop-filter .2s ease, overlay .2s allow-discrete, display .2s allow-discrete;
 }
-.rq-dlg[open]::backdrop { background: rgb(0 0 0 / .5); }
-@starting-style { .rq-dlg[open]::backdrop { background: rgb(0 0 0 / 0); } }
+.rq-dlg[open]::backdrop { background: rgb(0 0 0 / .7); backdrop-filter: blur(8px); }
+@starting-style { .rq-dlg[open]::backdrop { background: rgb(0 0 0 / 0); backdrop-filter: blur(0px); } }
 
 .rq-body {
   max-height: inherit; overflow-y: auto; overscroll-behavior: contain;
