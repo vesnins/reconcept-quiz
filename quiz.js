@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.6.0 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.7.0 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
@@ -12,6 +12,7 @@
     ASTRO_K: 2,
     ASTRO_MIN: 120000,
     SOFT_LIMIT: 60,    // часов: граница модуль/Astro
+    TILDA_K: 0.5,      // доля часов на штатные функции Тильды (настройка, подключение)
     LINKS: {
       tg: 'https://t.me/vesnin',
       max: 'https://max.ru/u/f9LHodD0cOLzIoHQFDNyrCKPvcLAdhvTg_SuRq5XdCnqyc_cAKB8rhm9kVM'
@@ -144,7 +145,8 @@
     var s = S.a.q_sections, sec = SEC[s] || SEC.unknown, shop = has('b');
     var lo = sec[0], hi = sec[1];
     if (shop) { var c = CAT[S.a.q_catalog] || CAT.unknown; lo += c[0]; hi += c[1]; }
-    var kind = shop ? 'shop' : (s === 'r1' ? 'landing' : 'multi');
+    var hardSel = (S.a.q_features || []).some(function (k) { return FEATURES[k] && FEATURES[k].hard; });
+    var kind = shop ? 'shop' : (s === 'r1' && !hardSel ? 'landing' : 'multi');
     if (kind === 'landing') { lo = 6; hi = 8; }
     var unsure = !s || s === 'unknown' || (shop && (!S.a.q_catalog || S.a.q_catalog === 'unknown'));
     return { kind: kind, n: [lo, hi], unsure: unsure };
@@ -160,7 +162,11 @@
       h0 += f.h[0]; h1 += f.h[1];
       if (!f.native) { nonNative0 += f.h[0]; nonNative1 += f.h[1]; }
     });
-    return { sel: sel, hard: hard, h: [h0, h1], soft: [nonNative0, nonNative1] };
+    return {
+      sel: sel, hard: hard, h: [h0, h1],
+      soft: [nonNative0, nonNative1],
+      nat: [h0 - nonNative0, h1 - nonNative1]
+    };
   }
 
   function platform(f) {
@@ -180,16 +186,18 @@
   function calc() {
     var sp = scope(), r = rate(), f = feats(), p = platform(f);
 
-    function total(pages, hours) {
+    // часы: на Astro считаем все функции, на Тильде — внешние полностью, штатные с коэффициентом
+    function hours(i) {
+      return p === 'astro' ? f.h[i] : f.soft[i] + f.nat[i] * CFG.TILDA_K;
+    }
+
+    function total(pages, h) {
       var b = baseTilda(sp, r, pages);
       if (p === 'astro') b = Math.max(b * CFG.ASTRO_K, CFG.ASTRO_MIN);
-      var fee = 0;
-      if (p === 'astro') fee = hours * CFG.HOUR;
-      else if (p === 'module') fee = hours * CFG.HOUR;
-      return b + fee;
+      return b + h * CFG.HOUR;
     }
-    var lo = total(sp.n[0], p === 'astro' ? f.h[0] : f.soft[0]);
-    var hi = total(sp.n[1], p === 'astro' ? f.h[1] : f.soft[1]);
+    var lo = total(sp.n[0], hours(0));
+    var hi = total(sp.n[1], hours(1));
 
     // альтернатива на Astro для сравнения
     var altLo = 0, altHi = 0;
@@ -198,15 +206,24 @@
       altHi = (Math.max(baseTilda(sp, r, sp.n[1]) * CFG.ASTRO_K, CFG.ASTRO_MIN) + f.h[1] * CFG.HOUR);
     }
 
-    if (sp.unsure) { lo *= 0.95; hi *= 1.15; altLo *= 0.95; altHi *= 1.15; }
+    if (sp.unsure) { hi *= 1.2; altHi *= 1.2; }
+
+    var main = pair(lo, hi), alt = pair(altLo, altHi);
 
     return {
       scope: sp, rate: r, f: f, platform: p,
-      lo: rnd(lo, 0), hi: rnd(hi, 1),
-      altLo: rnd(altLo, 0), altHi: rnd(altHi, 1),
-      weeks: weeks(sp, p, sp.n[1]),
-      altWeeks: weeks(sp, 'astro', sp.n[1])
+      lo: main[0], hi: main[1],
+      altLo: alt[0], altHi: alt[1],
+      weeks: weeks(sp, p, sp.n[1], hours(1)),
+      altWeeks: weeks(sp, 'astro', sp.n[1], f.h[1])
     };
+  }
+
+  // вилка: нижняя граница вниз, верхняя вверх, минимальный разброс 15 %
+  function pair(lo, hi) {
+    var a = rnd(lo, 0), b = rnd(hi, 1);
+    if (a > 0 && b < a * 1.15) b = rnd(a * 1.15, 1);
+    return [a, b];
   }
 
   function rnd(v, up) {
@@ -214,13 +231,14 @@
     return (up ? Math.ceil(v / s) : Math.round(v / s)) * s;
   }
 
-  function weeks(sp, p, pages) {
+  function weeks(sp, p, pages, h) {
     var astro = p === 'astro', w;
     if (sp.kind === 'landing') w = astro ? 4 : 2;
     else if (sp.kind === 'shop') w = astro ? 10 : 5;
     else if (pages > 12) w = astro ? 10 : 6;
     else w = astro ? 8 : 4;
     if (p === 'module') w += 2;
+    w += Math.round((h || 0) / 40);
     return w;
   }
 
@@ -262,6 +280,8 @@
     w.push('Обучение работе с сайтом');
     return w;
   }
+
+  function range(a, b) { return a === b ? money(a) : money(a) + ' – ' + money(b); }
 
   function money(n) { return n.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ₽'; }
 
@@ -403,7 +423,7 @@
       wrap.appendChild(ul);
 
       var price = el('div', 'rq-price');
-      price.appendChild(el('div', 'rq-num', money(c.lo) + ' – ' + money(c.hi)));
+      price.appendChild(el('div', 'rq-num', range(c.lo, c.hi)));
       price.appendChild(el('div', 'rq-term', 'Срок: от ' + c.weeks + ' недель'));
       wrap.appendChild(price);
 
@@ -419,7 +439,7 @@
       if (showAlt) {
         var alt = el('div', 'rq-alt');
         alt.appendChild(el('h3', 'rq-q', 'Альтернатива: на своём коде'));
-        alt.appendChild(el('div', 'rq-num', money(c.altLo) + ' – ' + money(c.altHi)));
+        alt.appendChild(el('div', 'rq-num', range(c.altLo, c.altHi)));
         alt.appendChild(el('div', 'rq-term', 'Срок: от ' + c.altWeeks + ' недель'));
         alt.appendChild(el('p', '', 'Дороже и дольше, зато максимальная скорость загрузки, потолок по SEO выше, код и сервер ваши, любой функционал возможен.'));
         cols.appendChild(alt);

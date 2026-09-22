@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.6.0 */
+/* Reconcept Quiz v1.6.1 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -39,7 +39,6 @@
   text-align: left;
   cursor: pointer; transition: background-color .2s ease, border-color .2s ease;
 }
-@media (hover: hover) { .rq-opt:hover { border-color: #c8c8fc; background: #c8c8fc; } }
 
 /* радио и чекбоксы */
 .rq-ctrl {
