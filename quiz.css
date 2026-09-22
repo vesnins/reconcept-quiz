@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.6.1 */
+/* Reconcept Quiz v1.8.0 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -31,21 +31,21 @@
 .rq-q--next { margin-top: 40px; }
 
 /* варианты */
-.rq-opts { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.rq-opts { display: grid; grid-template-columns: 1fr; gap: 4px; }
 .rq-opt {
-  display: flex; align-items: center; gap: 14px;
-  width: 100%; min-height: 60px; padding: 16px 20px;
-  background: #fff; border: 1px solid transparent;
-  text-align: left;
-  cursor: pointer; transition: background-color .2s ease, border-color .2s ease;
+  display: flex; align-items: flex-start; gap: 14px;
+  width: 100%; padding: 10px 0;
+  background: none; border: 0;
+  text-align: left; cursor: pointer;
 }
+.rq-opt:focus-visible { outline: 2px solid var(--rq-dark); outline-offset: 2px; }
 
 /* радио и чекбоксы */
 .rq-ctrl {
-  flex: 0 0 22px; width: 22px; height: 22px;
+  flex: 0 0 22px; width: 22px; height: 22px; margin-top: 1px;
   display: flex; align-items: center; justify-content: center;
   background: #fff; border: 1.5px solid var(--rq-dark);
-  transition: background-color .2s ease, border-color .2s ease;
+  transition: background-color .2s ease;
 }
 .rq-opts--single .rq-ctrl { border-radius: 50%; }
 .rq-opt.is-on .rq-ctrl { background: var(--rq-dark); }
@@ -56,8 +56,6 @@
   content: ''; width: 6px; height: 11px; margin-top: -3px;
   border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
 }
-.rq-opt.is-on { border-color: #c8c8fc; background: #c8c8fc; }
-.rq-opt:focus-visible { outline: 2px solid var(--rq-dark); outline-offset: 2px; }
 
 /* навигация */
 .rq-nav { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
@@ -111,7 +109,7 @@
 
 /* планшет */
 @media (min-width: 769px) {
-  .rq-opts { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .rq-opts { grid-template-columns: 1fr 1fr; gap: 4px 40px; }
 }
 
 /* модальное окно */

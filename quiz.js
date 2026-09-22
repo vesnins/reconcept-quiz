@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.7.0 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.8.0 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
