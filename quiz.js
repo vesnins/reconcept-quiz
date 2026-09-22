@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.1.0 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.2.0 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
@@ -345,7 +345,7 @@
       var on = cfg.multi ? (picked || []).indexOf(o[0]) > -1 : picked === o[0];
       if (on) b.className += ' is-on';
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.innerHTML = '<span class="rq-key">' + (i < 9 ? i + 1 : '') + '</span><span>' + esc(o[1]) + '</span>';
+      b.innerHTML = '<span>' + esc(o[1]) + '</span>';
       b.addEventListener('click', function () { pick(id, o[0], cfg); });
       list.appendChild(b);
     });

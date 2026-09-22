@@ -1,5 +1,4 @@
-/* Reconcept Quiz v1.0.0 */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+/* Reconcept Quiz v1.2.0 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -9,10 +8,9 @@
   --rq-accent: #e3ff00;
   --rq-line: #e6e5ea;
   --rq-bg: #f7f7f9;
-  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
-  color: var(--rq-dark);
-  max-width: 1600px;
-  margin: 0 auto;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 16px; font-weight: 400; line-height: 1.5;
+  color: #000;
   padding: 0 20px;
   -webkit-font-smoothing: antialiased;
   text-align: left;
@@ -24,18 +22,16 @@
 /* шапка шага */
 .rq-head { margin-bottom: 28px; }
 .rq-count {
-  font-size: 14px; font-weight: 600; color: var(--rq-gray);
-  letter-spacing: .02em; margin-bottom: 12px;
+  margin-bottom: 12px;
 }
 .rq-bar { height: 3px; background: var(--rq-line); overflow: hidden; }
 .rq-bar i { display: block; height: 100%; background: var(--rq-dark); transition: width .25s ease; }
 
 /* вопрос */
 .rq-q {
-  font-size: 28px; line-height: 1.15; font-weight: 700;
-  letter-spacing: -.01em; margin: 0 0 8px;
+  font-size: 30px; line-height: 1.2; font-weight: 400; margin: 0 0 8px;
 }
-.rq-hint { font-size: 16px; color: var(--rq-gray); margin: 0 0 24px; }
+.rq-hint { margin: 0 0 24px; }
 .rq-q + .rq-opts { margin-top: 24px; }
 
 /* варианты */
@@ -44,18 +40,11 @@
   display: flex; align-items: center; gap: 14px;
   width: 100%; min-height: 60px; padding: 16px 20px;
   background: #fff; border: 1px solid var(--rq-line);
-  text-align: left; font-size: 17px; line-height: 1.3; font-weight: 500;
+  text-align: left;
   cursor: pointer; transition: border-color .12s ease, background-color .12s ease;
 }
 .rq-opt.is-on { border-color: var(--rq-dark); background: var(--rq-accent); }
 .rq-opt:focus-visible { outline: 2px solid var(--rq-dark); outline-offset: 2px; }
-.rq-key {
-  flex: 0 0 26px; height: 26px; display: none;
-  align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 600; color: var(--rq-gray);
-  border: 1px solid var(--rq-line);
-}
-.rq-opt.is-on .rq-key { color: var(--rq-dark); border-color: var(--rq-dark); }
 
 /* поле ввода */
 .rq-field { display: block; margin-top: 20px; }
@@ -71,7 +60,7 @@
 .rq-nav { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
 .rq-back {
   background: none; border: none; padding: 12px 0;
-  font-size: 16px; font-weight: 500; color: var(--rq-gray); cursor: pointer;
+  cursor: pointer;
 }
 .rq-next {
   padding: 18px 40px; background: var(--rq-dark); border: none;
@@ -143,10 +132,7 @@
 
 /* планшет */
 @media (min-width: 769px) {
-  .rq { padding: 0 40px; }
-  .rq-q { font-size: 36px; }
   .rq-opts { grid-template-columns: 1fr 1fr; gap: 16px; }
-  .rq-key { display: flex; }
   .rq-num { font-size: 44px; }
   .rq-btns { grid-template-columns: repeat(3, auto); justify-content: start; }
   .rq-btn { padding: 18px 40px; }
@@ -154,8 +140,6 @@
 
 /* десктоп */
 @media (min-width: 1025px) {
-  .rq-q { font-size: 44px; }
-  .rq-opts { grid-template-columns: repeat(2, minmax(0, 560px)); }
   .rq-cols { grid-template-columns: 1fr 1fr; gap: 40px; }
   .rq-result { max-width: 1160px; }
 }
