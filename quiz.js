@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.3.1 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.4.0 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
@@ -289,7 +289,7 @@
   function money(n) { return n.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ₽'; }
 
   /* ---------- РЕНДЕР ---------- */
-  var root;
+  var root, dlg, body;
 
   function el(tag, cls, html) {
     var e = document.createElement(tag);
@@ -395,8 +395,7 @@
 
   function scrollTop() {
     t0 = Date.now();
-    var r = root.getBoundingClientRect();
-    if (r.top < 0) window.scrollTo({ top: window.pageYOffset + r.top - 20, behavior: 'smooth' });
+    if (body) body.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /* ---------- РЕЗУЛЬТАТ ---------- */
@@ -473,10 +472,9 @@
 
   /* ---------- КЛАВИАТУРА ---------- */
   function keys(e) {
-    if (S.done || !root.contains(document.activeElement)) return;
+    if (S.done || !dlg || !dlg.open) return;
     var q = queue(), id = q[Math.min(S.idx, q.length - 1)], cfg = Q[id];
     if (!cfg) return;
-    if (e.key === 'Escape' && S.idx > 0) { S.idx--; save(); render(); scrollTop(); return; }
     if (e.key === 'Enter' && cfg.multi && document.activeElement.tagName !== 'BUTTON') { step(id); return; }
     var n = parseInt(e.key, 10);
     if (n >= 1 && n <= 9 && cfg.o && cfg.o[n - 1]) {
@@ -489,16 +487,38 @@
     root = document.getElementById('rq');
     if (!root) return;
     root.className = 'rq';
-    load();
-    render();
+    dlg = el('dialog', 'rq-dlg');
+    dlg.setAttribute('aria-label', 'Расчёт стоимости сайта');
+    var x = el('button', 'rq-x', '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" fill="none"/></svg>');
+    x.type = 'button';
+    x.setAttribute('aria-label', 'Закрыть');
+    x.addEventListener('click', function () { dlg.close(); });
+    body = el('div', 'rq-body');
+    body.appendChild(root);
+    dlg.appendChild(x);
+    dlg.appendChild(body);
+    document.body.appendChild(dlg);
+    // закрытие по клику на фон (не срабатывает при выделении текста с уходом за край)
+    var down;
+    dlg.addEventListener('pointerdown', function (e) { down = e.target; });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg && down === dlg) dlg.close(); });
+    // триггер: любая ссылка #quiz
+    window.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href$="#quiz"]');
+      if (!a) return;
+      e.preventDefault(); e.stopPropagation();
+      open();
+    }, true);
     document.addEventListener('keydown', keys);
-    if ('IntersectionObserver' in window) {
-      var seen = false;
-      var io = new IntersectionObserver(function (en) {
-        if (en[0].isIntersecting && !seen) { seen = true; t0 = Date.now(); ym('quiz_view'); io.disconnect(); }
-      }, { threshold: 0.3 });
-      io.observe(root);
-    }
+    if (location.hash === '#quiz') open();
+  }
+
+  function open() {
+    reset(); render();
+    dlg.showModal();
+    body.scrollTop = 0;
+    t0 = Date.now();
+    ym('quiz_view');
   }
 
   if (typeof module !== 'undefined' && module.exports) { module.exports = { S: S, calc: calc, queue: queue, rate: rate, scope: scope, feats: feats, platform: platform, CFG: CFG }; return; }

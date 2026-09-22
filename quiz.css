@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.3.2 */
+/* Reconcept Quiz v1.4.0 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -96,6 +96,45 @@
   .rq-opts { grid-template-columns: 1fr 1fr; gap: 16px; }
 }
 
+/* модальное окно */
+html:has(.rq-dlg[open]) { overflow: hidden; scrollbar-gutter: stable; }
+
+.rq-dlg {
+  width: calc(100% - 40px); max-width: none; max-height: calc(100dvh - 40px);
+  margin: auto; padding: 0; border: 0; background: #fff; color: #000;
+  overflow: hidden;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .2s ease, transform .2s ease, overlay .2s allow-discrete, display .2s allow-discrete;
+}
+.rq-dlg[open] { opacity: 1; transform: none; }
+@starting-style { .rq-dlg[open] { opacity: 0; transform: translateY(16px); } }
+
+.rq-dlg::backdrop {
+  background: rgb(0 0 0 / 0);
+  transition: background-color .2s ease, overlay .2s allow-discrete, display .2s allow-discrete;
+}
+.rq-dlg[open]::backdrop { background: rgb(0 0 0 / .5); }
+@starting-style { .rq-dlg[open]::backdrop { background: rgb(0 0 0 / 0); } }
+
+.rq-body {
+  max-height: inherit; overflow-y: auto; overscroll-behavior: contain;
+  padding: 70px 20px 40px;
+}
+
+.rq-x {
+  position: absolute; top: 12px; right: 12px; z-index: 1;
+  display: grid; place-items: center; width: 48px; height: 48px;
+  padding: 0; border: 0; background: none; color: #000; cursor: pointer;
+  transition: transform .2s ease;
+}
+.rq-x:focus-visible { outline: 2px solid #1e1435; outline-offset: 2px; }
+@media (hover: hover) { .rq-x:hover { transform: rotate(45deg); } }
+
+/* десктоп */
+@media (min-width: 1025px) {
+  .rq-dlg { width: 50%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .rq * { transition: none !important; }
+  .rq *, .rq-dlg, .rq-dlg::backdrop, .rq-x { transition: none !important; }
 }
