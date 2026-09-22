@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.5.0 */
+/* Reconcept Quiz v1.6.0 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -40,6 +40,23 @@
   cursor: pointer; transition: background-color .2s ease, border-color .2s ease;
 }
 @media (hover: hover) { .rq-opt:hover { border-color: #c8c8fc; background: #c8c8fc; } }
+
+/* радио и чекбоксы */
+.rq-ctrl {
+  flex: 0 0 22px; width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; border: 1.5px solid var(--rq-dark);
+  transition: background-color .2s ease, border-color .2s ease;
+}
+.rq-opts--single .rq-ctrl { border-radius: 50%; }
+.rq-opt.is-on .rq-ctrl { background: var(--rq-dark); }
+.rq-opts--single .rq-opt.is-on .rq-ctrl::after {
+  content: ''; width: 8px; height: 8px; border-radius: 50%; background: #fff;
+}
+.rq-opts--multi .rq-opt.is-on .rq-ctrl::after {
+  content: ''; width: 6px; height: 11px; margin-top: -3px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
 .rq-opt.is-on { border-color: #c8c8fc; background: #c8c8fc; }
 .rq-opt:focus-visible { outline: 2px solid var(--rq-dark); outline-offset: 2px; }
 

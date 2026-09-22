@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.5.0 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.6.0 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
@@ -298,7 +298,8 @@
     subs.forEach(function (s, si) {
       wrap.appendChild(el('h3', 'rq-q' + (si ? ' rq-q--next' : ''), esc(s.t)));
       if (s.hint) wrap.appendChild(el('p', 'rq-hint', esc(s.hint)));
-      var list = el('div', 'rq-opts');
+      var list = el('div', 'rq-opts ' + (s.multi ? 'rq-opts--multi' : 'rq-opts--single'));
+      list.setAttribute('role', s.multi ? 'group' : 'radiogroup');
       var picked = S.a[s.id];
       (s.o || []).forEach(function (o) {
         var b = el('button', 'rq-opt');
@@ -306,8 +307,9 @@
         b.setAttribute('data-v', o[0]);
         var on = s.multi ? (picked || []).indexOf(o[0]) > -1 : picked === o[0];
         if (on) b.className += ' is-on';
-        b.setAttribute('aria-pressed', on ? 'true' : 'false');
-        b.innerHTML = '<span>' + esc(o[1]) + '</span>';
+        b.setAttribute('role', s.multi ? 'checkbox' : 'radio');
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+        b.innerHTML = '<span class="rq-ctrl"></span><span>' + esc(o[1]) + '</span>';
         b.addEventListener('click', function () { pick(s, o[0], id, subs); });
         list.appendChild(b);
       });
