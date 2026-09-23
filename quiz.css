@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.8.0 */
+/* Reconcept Quiz v1.8.1 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -135,7 +135,7 @@ html:has(.rq-dlg[open]) { overflow: hidden; scrollbar-gutter: stable; }
 
 .rq-body {
   max-height: inherit; overflow-y: auto; overscroll-behavior: contain;
-  padding: 70px 20px 40px;
+  padding: 70px 20px;
 }
 
 .rq-x {

@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.8.0 — vanilla JS, без зависимостей */
+/* Reconcept Quiz v1.8.1 — vanilla JS, без зависимостей */
 (function () {
   'use strict';
 
@@ -43,7 +43,7 @@
   var Q = {
     q_task: {
       t: 'Что должен делать сайт?', multi: true,
-      hint: 'Можно выбрать несколько',
+      hint: 'Можно выбрать несколько задач',
       o: [
         ['a', 'Продавать услуги, приносить заявки'],
         ['b', 'Продавать товары'],
@@ -343,7 +343,7 @@
       back.addEventListener('click', function () { S.idx--; ym('quiz_back', { back_from: id }); save(); render(); scrollTop(); });
       nav.appendChild(back);
     }
-    if (cfg.multi) {
+    if (cfg.multi && ready(subs)) {
       var next = el('button', 'rq-next', 'Далее');
       next.type = 'button';
       next.addEventListener('click', function () { step(id); });
