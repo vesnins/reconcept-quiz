@@ -1,4 +1,4 @@
-/* Reconcept Quiz v1.8.1 */
+/* Reconcept Quiz v1.8.2 */
 
 .rq, .rq * { box-sizing: border-box; }
 
@@ -58,7 +58,7 @@
 }
 
 /* навигация */
-.rq-nav { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
+.rq-nav { display: flex; align-items: center; gap: 16px; margin-top: 28px; min-height: 48px; }
 .rq-back {
   background: none; border: none; padding: 12px 0;
   cursor: pointer;
@@ -122,7 +122,8 @@ html:has(.rq-dlg[open]) { overflow: hidden; scrollbar-gutter: stable; }
   opacity: 0; transform: translateY(16px);
   transition: opacity .2s ease, transform .2s ease, overlay .2s allow-discrete, display .2s allow-discrete;
 }
-.rq-dlg[open] { opacity: 1; transform: none; }
+.rq-dlg[open] { opacity: 1; transform: none; display: flex; flex-direction: column; }
+.rq-dlg:not([open]) { display: none; }
 .rq-dlg:focus { outline: none; }
 @starting-style { .rq-dlg[open] { opacity: 0; transform: translateY(16px); } }
 
@@ -134,7 +135,7 @@ html:has(.rq-dlg[open]) { overflow: hidden; scrollbar-gutter: stable; }
 @starting-style { .rq-dlg[open]::backdrop { background: rgb(0 0 0 / 0); backdrop-filter: blur(0px); } }
 
 .rq-body {
-  max-height: inherit; overflow-y: auto; overscroll-behavior: contain;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   padding: 70px 20px;
 }
 
